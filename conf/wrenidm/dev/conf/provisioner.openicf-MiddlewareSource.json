@@ -1,0 +1,173 @@
+{
+    "connectorRef" : {
+        "systemType" : "provisioner.openicf",
+        "bundleName" : "org.forgerock.openicf.connectors.csvfile-connector",
+        "connectorName" : "org.forgerock.openicf.csvfile.CSVFileConnector",
+        "displayName" : "CSV File Connector",
+        "bundleVersion" : "1.5.1.4"
+    },
+    "poolConfigOption" : {
+        "maxObjects" : 10,
+        "maxIdle" : 10,
+        "maxWait" : 150000,
+        "minEvictableIdleTimeMillis" : 120000,
+        "minIdle" : 1
+    },
+    "resultsHandlerConfig" : {
+        "enableNormalizingResultsHandler" : true,
+        "enableFilteredResultsHandler" : true,
+        "enableCaseInsensitiveFilter" : false,
+        "enableAttributesToGetSearchResultsHandler" : true
+    },
+    "operationTimeout" : {
+        "CREATE" : -1,
+        "UPDATE" : -1,
+        "DELETE" : -1,
+        "TEST" : -1,
+        "SCRIPT_ON_CONNECTOR" : -1,
+        "SCRIPT_ON_RESOURCE" : -1,
+        "GET" : -1,
+        "RESOLVEUSERNAME" : -1,
+        "AUTHENTICATE" : -1,
+        "SEARCH" : -1,
+        "VALIDATE" : -1,
+        "SYNC" : -1,
+        "SCHEMA" : -1
+    },
+    "configurationProperties" : {
+        "headerPassword" : "password",
+        "csvFile" : "/opt/cloudSec/ceaser/scripts/fetchworkatousers/results/Users_report_.csv",
+        "newlineString" : "\n",
+        "headerUid" : "Email",
+        "quoteCharacter" : "\"",
+        "fieldDelimiter" : ",",
+        "syncFileRetentionCount" : "3",
+        "readSchema" : false
+    },
+    "name" : "MiddlewareSource",
+    "enabled" : true,
+    "objectTypes" : {
+        "__ACCOUNT__" : {
+            "$schema" : "http://json-schema.org/draft-03/schema",
+            "id" : "__ACCOUNT__",
+            "type" : "object",
+            "nativeType" : "__ACCOUNT__",
+            "properties" : {
+                "Location" : {
+                    "type" : "string",
+                    "nativeType" : "string",
+                    "nativeName" : "Location",
+                    "required" : false
+                },
+                "Employee_Id" : {
+                    "type" : "string",
+                    "nativeType" : "string",
+                    "nativeName" : "Employee_Id",
+                    "required" : false
+                },
+                "Manager_Email" : {
+                    "type" : "string",
+                    "nativeType" : "string",
+                    "nativeName" : "Manager_Email",
+                    "required" : false
+                },
+                "__UID__" : {
+                    "type" : "string",
+                    "nativeType" : "string",
+                    "nativeName" : "Employee_Id",
+                    "required" : false
+                },
+                "Title" : {
+                    "type" : "string",
+                    "nativeType" : "string",
+                    "nativeName" : "Title",
+                    "required" : false
+                },
+                "Cost_Center_Name" : {
+                    "type" : "string",
+                    "nativeType" : "string",
+                    "nativeName" : "Cost_Center_Name",
+                    "required" : false
+                },
+                "Status" : {
+                    "type" : "string",
+                    "nativeType" : "string",
+                    "nativeName" : "Status",
+                    "required" : false
+                },
+                "Grant_Manager_Email" : {
+                    "type" : "string",
+                    "nativeType" : "string",
+                    "nativeName" : "Grant_Manager_Email",
+                    "required" : false
+                },
+                "Grant_Manager_ID" : {
+                    "type" : "string",
+                    "nativeType" : "string",
+                    "nativeName" : "Grant_Manager_ID",
+                    "required" : false
+                },
+                "Manager_ID" : {
+                    "type" : "string",
+                    "nativeType" : "string",
+                    "nativeName" : "Manager_ID",
+                    "required" : false
+                },
+                "Preferred_Name" : {
+                    "type" : "string",
+                    "nativeType" : "string",
+                    "nativeName" : "Preferred_Name",
+                    "required" : false
+                },
+                "Full_Name" : {
+                    "type" : "string",
+                    "nativeType" : "string",
+                    "nativeName" : "Full_Name",
+                    "required" : false
+                },
+                "__NAME__" : {
+                    "type" : "string",
+                    "nativeType" : "string",
+                    "nativeName" : "__NAME__",
+                    "required" : true
+                },
+                "Email" : {
+                    "type" : "string",
+                    "nativeType" : "string",
+                    "nativeName" : "Email",
+                    "required" : false
+                },
+                "Company_Name" : {
+                    "type" : "string",
+                    "nativeType" : "string",
+                    "nativeName" : "Company_Name",
+                    "required" : false
+                },
+                "Termination_Date" : {
+                    "type" : "string",
+                    "nativeType" : "string",
+                    "nativeName" : "Termination_Date",
+                    "required" : false
+                },
+                "Supervisory_Org" : {
+                    "type" : "string",
+                    "nativeType" : "string",
+                    "nativeName" : "Supervisory_Org",
+                    "required" : false
+                },
+                "Product" : {
+                    "type" : "string",
+                    "nativeType" : "string",
+                    "nativeName" : "Product",
+                    "required" : false
+                },
+                "Company_Hierarchy" : {
+                    "type" : "string",
+                    "nativeType" : "string",
+                    "nativeName" : "Company_Hierarchy",
+                    "required" : false
+                }
+            }
+        }
+    }
+}

@@ -1,0 +1,908 @@
+{
+    "mappings" : [
+        {
+            "target" : "managed/googleGroup",
+            "source" : "system/googleIdentity/__GROUP__",
+            "name" : "systemGoogleidentity__GROUP___managedGooglegroup0",
+            "properties" : [
+                {
+                    "target" : "members",
+                    "transform" : {
+                        "type" : "text/javascript",
+                        "globals" : { },
+                        "file" : "script/googleMap/MapgroupID.js"
+                    },
+                    "source" : ""
+                },
+                {
+                    "target" : "__NAME__",
+                    "source" : "__NAME__"
+                },
+                {
+                    "target" : "_id",
+                    "transform" : {
+                        "type" : "text/javascript",
+                        "globals" : { },
+                        "source" : "source._id"
+                    },
+                    "source" : ""
+                }
+            ],
+            "policies" : [
+                {
+                    "action" : "EXCEPTION",
+                    "situation" : "AMBIGUOUS"
+                },
+                {
+                    "action" : "EXCEPTION",
+                    "situation" : "SOURCE_MISSING"
+                },
+                {
+                    "action" : "UNLINK",
+                    "situation" : "MISSING"
+                },
+                {
+                    "action" : "EXCEPTION",
+                    "situation" : "FOUND_ALREADY_LINKED"
+                },
+                {
+                    "action" : "DELETE",
+                    "situation" : "UNQUALIFIED"
+                },
+                {
+                    "action" : "EXCEPTION",
+                    "situation" : "UNASSIGNED"
+                },
+                {
+                    "action" : "EXCEPTION",
+                    "situation" : "LINK_ONLY"
+                },
+                {
+                    "action" : "IGNORE",
+                    "situation" : "TARGET_IGNORED"
+                },
+                {
+                    "action" : "IGNORE",
+                    "situation" : "SOURCE_IGNORED"
+                },
+                {
+                    "action" : "IGNORE",
+                    "situation" : "ALL_GONE"
+                },
+                {
+                    "action" : "UPDATE",
+                    "situation" : "CONFIRMED"
+                },
+                {
+                    "action" : "UPDATE",
+                    "situation" : "FOUND"
+                },
+                {
+                    "action" : "CREATE",
+                    "situation" : "ABSENT"
+                }
+            ]
+        },
+        {
+            "target" : "managed/user",
+            "source" : "system/googleIdentity/__ACCOUNT__",
+            "name" : "systemGoogleidentity__ACCOUNT___managedUser",
+            "validSource" : {
+                "type" : "text/javascript",
+                "source" : "source != null ? !source.isAdmin : false;"
+            },
+            "properties" : [
+                {
+                    "target" : "userName",
+                    "source" : "__NAME__"
+                },
+                {
+                    "target" : "givenName",
+                    "source" : "givenName"
+                },
+                {
+                    "target" : "sn",
+                    "source" : "familyName"
+                },
+                {
+                    "target" : "mail",
+                    "source" : "emails",
+                    "transform" : {
+                        "type" : "text/javascript",
+                        "source" : "source.length ? source[0].address : null"
+                    }
+                },
+                {
+                    "target" : "accountStatus",
+                    "source" : "suspensionReason",
+                    "transform" : {
+                        "type" : "text/javascript",
+                        "source" : "!source ? 'active' : 'inactive';"
+                    }
+                }
+            ],
+            "policies" : [
+                {
+                    "situation" : "CONFIRMED",
+                    "action" : "UPDATE"
+                },
+                {
+                    "situation" : "FOUND",
+                    "action" : "UPDATE"
+                },
+                {
+                    "situation" : "ABSENT",
+                    "action" : "CREATE"
+                },
+                {
+                    "situation" : "AMBIGUOUS",
+                    "action" : "EXCEPTION"
+                },
+                {
+                    "situation" : "MISSING",
+                    "action" : "UNLINK"
+                },
+                {
+                    "situation" : "SOURCE_MISSING",
+                    "action" : "IGNORE"
+                },
+                {
+                    "situation" : "UNQUALIFIED",
+                    "action" : "IGNORE"
+                },
+                {
+                    "situation" : "UNASSIGNED",
+                    "action" : "IGNORE"
+                }
+            ],
+            "onCreate" : {
+                "type" : "text/javascript",
+                "globals" : { },
+                "source" : "target.password='GoJek2021!'"
+            },
+            "correlationQuery" : [ ]
+        },
+        {
+            "target" : "managed/user",
+            "source" : "system/MiddlewareSource/__ACCOUNT__",
+            "name" : "systemMiddlewaresource__ACCOUNT___managedUser",
+            "properties" : [
+                {
+                    "target" : "_id",
+                    "source" : "Email"
+                },
+                {
+                    "target" : "employeeID",
+                    "source" : "__UID__"
+                },
+                {
+                    "target" : "userName",
+                    "source" : "Email"
+                },
+                {
+                    "target" : "fullName",
+                    "source" : "Full_Name"
+                },
+                {
+                    "target" : "givenName",
+                    "source" : "Preferred_Name"
+                },
+                {
+                    "target" : "mail",
+                    "source" : "Email"
+                },
+                {
+                    "target" : "accountStatus",
+                    "source" : "Status"
+                },
+                {
+                    "target" : "worker_type",
+                    "source" : "Email",
+                    "transform" : {
+                        "type" : "text/javascript",
+                        "globals" : { },
+                        "file" : "script/transformEmployeeType.js"
+                    },
+                    "condition" : "/object/Email pr"
+                },
+                {
+                    "target" : "department",
+                    "source" : "Cost_Center_Name"
+                },
+                {
+                    "target" : "departmentID",
+                    "source" : "Cost_Center_ID"
+                },
+                {
+                    "target" : "title",
+                    "source" : "Title"
+                },
+                {
+                    "target" : "managerEmail",
+                    "source" : "Manager_Email",
+                    "condition" : "/object/Manager_Email pr"
+                },
+                {
+                    "target" : "managerID",
+                    "source" : "Manager_ID"
+                },
+                {
+                    "target" : "entityID",
+                    "source" : "Entity_ID"
+                },
+                {
+                    "target" : "entityName",
+                    "source" : "Entity_Name"
+                },
+                {
+                    "target" : "country",
+                    "source" : "Location",
+                    "condition" : "/object/Location pr"
+                },
+                {
+                    "target" : "2nd-LevelManagerEmail",
+                    "source" : "Grant_Manager_Email"
+                },
+                {
+                    "target" : "2nd-LevelManagerID",
+                    "source" : "Grant_Manager_ID"
+                }
+            ],
+            "policies" : [
+                {
+                    "action" : "EXCEPTION",
+                    "situation" : "AMBIGUOUS"
+                },
+                {
+                    "action" : "IGNORE",
+                    "situation" : "SOURCE_MISSING"
+                },
+                {
+                    "action" : "EXCEPTION",
+                    "situation" : "MISSING"
+                },
+                {
+                    "action" : "EXCEPTION",
+                    "situation" : "FOUND_ALREADY_LINKED"
+                },
+                {
+                    "action" : "DELETE",
+                    "situation" : "UNQUALIFIED"
+                },
+                {
+                    "action" : "IGNORE",
+                    "situation" : "UNASSIGNED"
+                },
+                {
+                    "action" : "EXCEPTION",
+                    "situation" : "LINK_ONLY"
+                },
+                {
+                    "action" : "IGNORE",
+                    "situation" : "TARGET_IGNORED"
+                },
+                {
+                    "action" : "IGNORE",
+                    "situation" : "SOURCE_IGNORED"
+                },
+                {
+                    "action" : "IGNORE",
+                    "situation" : "ALL_GONE"
+                },
+                {
+                    "action" : "UPDATE",
+                    "situation" : "CONFIRMED"
+                },
+                {
+                    "action" : "UPDATE",
+                    "situation" : "FOUND"
+                },
+                {
+                    "action" : "CREATE",
+                    "situation" : "ABSENT"
+                }
+            ],
+            "correlationQuery" : [
+                {
+                    "linkQualifier" : "default",
+                    "expressionTree" : {
+                        "any" : [
+                            "userName"
+                        ]
+                    },
+                    "mapping" : "systemMiddlewaresource__ACCOUNT___managedUser",
+                    "type" : "text/javascript",
+                    "file" : "ui/correlateTreeToQueryFilter.js"
+                }
+            ],
+            "onCreate" : {
+                "type" : "text/javascript",
+                "globals" : { },
+                "source" : "target.password='GoJek2021!'"
+            },
+            "enableSync" : false
+        },
+        {
+            "target" : "managed/user",
+            "source" : "system/gojekGoogleUAT/__ACCOUNT__",
+            "name" : "systemGojekgoogleuat__ACCOUNT___managedUser",
+            "properties" : [
+                {
+                    "target" : "userName",
+                    "source" : "__NAME__"
+                },
+                {
+                    "target" : "_id",
+                    "source" : "__NAME__"
+                },
+                {
+                    "target" : "mail",
+                    "source" : "emails",
+                    "transform" : {
+                        "type" : "text/javascript",
+                        "globals" : { },
+                        "source" : "source.length ? source[0].address : null"
+                    }
+                },
+                {
+                    "target" : "googleData/entityName",
+                    "source" : "organizations",
+                    "transform" : {
+                        "type" : "text/javascript",
+                        "globals" : { },
+                        "source" : "if (source != null) {\n source[0].costCenter;\n}"
+                    }
+                },
+                {
+                    "target" : "googleData/title",
+                    "source" : "organizations",
+                    "transform" : {
+                        "type" : "text/javascript",
+                        "globals" : { },
+                        "source" : "if (source != null) {\n source[0].title;\n}"
+                    }
+                },
+                {
+                    "target" : "googleData/department",
+                    "source" : "organizations",
+                    "transform" : {
+                        "type" : "text/javascript",
+                        "globals" : { },
+                        "source" : "if (source != null) {\n source[0].department;\n}"
+                    }
+                },
+                {
+                    "target" : "googleData/manager",
+                    "source" : "relations",
+                    "transform" : {
+                        "type" : "text/javascript",
+                        "globals" : { },
+                        "source" : "if (source != null) {\n source[0].value;\n}"
+                    }
+                },
+                {
+                    "target" : "googleData/employmentStatus",
+                    "source" : "suspended",
+                    "transform" : {
+                        "type" : "text/javascript",
+                        "globals" : { },
+                        "source" : "!source ? 'active' : 'inactive';"
+                    }
+                },
+                {
+                    "target" : "googleData/emailAliases",
+                    "source" : "aliases"
+                },
+                {
+                    "target" : "googleData/lastLoginTime",
+                    "source" : "lastLoginTime",
+                    "transform" : {
+                        "type" : "text/javascript",
+                        "globals" : { },
+                        "source" : "source[0]"
+                    }
+                }
+            ],
+            "policies" : [
+                {
+                    "action" : "EXCEPTION",
+                    "situation" : "AMBIGUOUS"
+                },
+                {
+                    "action" : "EXCEPTION",
+                    "situation" : "SOURCE_MISSING"
+                },
+                {
+                    "action" : "CREATE",
+                    "situation" : "MISSING"
+                },
+                {
+                    "action" : "EXCEPTION",
+                    "situation" : "FOUND_ALREADY_LINKED"
+                },
+                {
+                    "action" : "DELETE",
+                    "situation" : "UNQUALIFIED"
+                },
+                {
+                    "action" : "IGNORE",
+                    "situation" : "UNASSIGNED"
+                },
+                {
+                    "action" : "EXCEPTION",
+                    "situation" : "LINK_ONLY"
+                },
+                {
+                    "action" : "IGNORE",
+                    "situation" : "TARGET_IGNORED"
+                },
+                {
+                    "action" : "IGNORE",
+                    "situation" : "SOURCE_IGNORED"
+                },
+                {
+                    "action" : "IGNORE",
+                    "situation" : "ALL_GONE"
+                },
+                {
+                    "action" : "UPDATE",
+                    "situation" : "CONFIRMED"
+                },
+                {
+                    "action" : "UPDATE",
+                    "situation" : "FOUND"
+                },
+                {
+                    "action" : "CREATE",
+                    "situation" : "ABSENT"
+                }
+            ],
+            "correlationQuery" : [
+                {
+                    "linkQualifier" : "default",
+                    "expressionTree" : {
+                        "any" : [
+                            "userName"
+                        ]
+                    },
+                    "mapping" : "systemGojekgoogleuat__ACCOUNT___managedUser",
+                    "type" : "text/javascript",
+                    "file" : "ui/correlateTreeToQueryFilter.js"
+                }
+            ],
+            "onCreate" : {
+                "type" : "text/javascript",
+                "globals" : { },
+                "source" : "target.password=('GoJek2021!')"
+            }
+        },
+        {
+            "target" : "managed/user",
+            "source" : "system/GojekGoogleProd/__ACCOUNT__",
+            "name" : "systemGojekgoogleprod__ACCOUNT___managedUser",
+            "properties" : [
+                {
+                    "target" : "userName",
+                    "source" : "__NAME__"
+                },
+                {
+                    "target" : "_id",
+                    "source" : "__NAME__"
+                },
+                {
+                    "target" : "mail",
+                    "source" : "emails",
+                    "transform" : {
+                        "type" : "text/javascript",
+                        "globals" : { },
+                        "source" : "source.length ? source[0].address : null"
+                    }
+                },
+                {
+                    "target" : "googleData/entityName",
+                    "source" : "organizations",
+                    "transform" : {
+                        "type" : "text/javascript",
+                        "globals" : { },
+                        "source" : "if (source != null) {\n source[0].costCenter;\n}"
+                    }
+                },
+                {
+                    "target" : "googleData/title",
+                    "source" : "organizations",
+                    "transform" : {
+                        "type" : "text/javascript",
+                        "globals" : { },
+                        "source" : "if (source != null) {\n source[0].title;\n}"
+                    }
+                },
+                {
+                    "target" : "googleData/department",
+                    "source" : "organizations",
+                    "transform" : {
+                        "type" : "text/javascript",
+                        "globals" : { },
+                        "source" : "if (source != null) {\n source[0].department;\n}"
+                    }
+                },
+                {
+                    "target" : "googleData/manager",
+                    "source" : "relations",
+                    "transform" : {
+                        "type" : "text/javascript",
+                        "globals" : { },
+                        "source" : "if (source != null) {\n source[0].value;\n}"
+                    }
+                },
+                {
+                    "target" : "googleData/employmentStatus",
+                    "source" : "suspended",
+                    "transform" : {
+                        "type" : "text/javascript",
+                        "globals" : { },
+                        "source" : "!source ? 'active' : 'inactive';"
+                    }
+                },
+                {
+                    "target" : "googleData/emailAliases",
+                    "source" : "aliases"
+                },
+                {
+                    "target" : "googleData/lastLoginTime",
+                    "source" : "lastLoginTime",
+                    "transform" : {
+                        "type" : "text/javascript",
+                        "globals" : { },
+                        "source" : "source[0]"
+                    }
+                }
+            ],
+            "policies" : [
+                {
+                    "action" : "EXCEPTION",
+                    "situation" : "AMBIGUOUS"
+                },
+                {
+                    "action" : "EXCEPTION",
+                    "situation" : "SOURCE_MISSING"
+                },
+                {
+                    "action" : "CREATE",
+                    "situation" : "MISSING"
+                },
+                {
+                    "action" : "EXCEPTION",
+                    "situation" : "FOUND_ALREADY_LINKED"
+                },
+                {
+                    "action" : "DELETE",
+                    "situation" : "UNQUALIFIED"
+                },
+                {
+                    "action" : "IGNORE",
+                    "situation" : "UNASSIGNED"
+                },
+                {
+                    "action" : "EXCEPTION",
+                    "situation" : "LINK_ONLY"
+                },
+                {
+                    "action" : "IGNORE",
+                    "situation" : "TARGET_IGNORED"
+                },
+                {
+                    "action" : "IGNORE",
+                    "situation" : "SOURCE_IGNORED"
+                },
+                {
+                    "action" : "IGNORE",
+                    "situation" : "ALL_GONE"
+                },
+                {
+                    "action" : "UPDATE",
+                    "situation" : "CONFIRMED"
+                },
+                {
+                    "action" : "UPDATE",
+                    "situation" : "FOUND"
+                },
+                {
+                    "action" : "CREATE",
+                    "situation" : "ABSENT"
+                }
+            ],
+            "correlationQuery" : [
+                {
+                    "linkQualifier" : "default",
+                    "expressionTree" : {
+                        "any" : [
+                            "userName"
+                        ]
+                    },
+                    "mapping" : "systemGojekgoogleuat__ACCOUNT___managedUser",
+                    "type" : "text/javascript",
+                    "file" : "ui/correlateTreeToQueryFilter.js"
+                }
+            ],
+            "onCreate" : {
+                "type" : "text/javascript",
+                "globals" : { },
+                "source" : "target.password=('GoJek2021!')"
+            }
+        },
+        {
+            "target" : "managed/user",
+            "source" : "system/middlewareSourceUAT/__ACCOUNT__",
+            "name" : "systemMiddlewaresourceuat__ACCOUNT___managedUser",
+            "properties" : [
+                {
+                    "target" : "userName",
+                    "source" : "Email"
+                },
+                {
+                    "target" : "mail",
+                    "source" : "Email"
+                },
+                {
+                    "target" : "_id",
+                    "source" : "Email"
+                },
+                {
+                    "target" : "employeeID",
+                    "source" : "__UID__"
+                },
+                {
+                    "target" : "fullName",
+                    "source" : "Full_Name"
+                }
+            ],
+            "policies" : [
+                {
+                    "action" : "EXCEPTION",
+                    "situation" : "AMBIGUOUS"
+                },
+                {
+                    "action" : "EXCEPTION",
+                    "situation" : "SOURCE_MISSING"
+                },
+                {
+                    "action" : "EXCEPTION",
+                    "situation" : "MISSING"
+                },
+                {
+                    "action" : "EXCEPTION",
+                    "situation" : "FOUND_ALREADY_LINKED"
+                },
+                {
+                    "action" : "DELETE",
+                    "situation" : "UNQUALIFIED"
+                },
+                {
+                    "action" : "EXCEPTION",
+                    "situation" : "UNASSIGNED"
+                },
+                {
+                    "action" : "EXCEPTION",
+                    "situation" : "LINK_ONLY"
+                },
+                {
+                    "action" : "IGNORE",
+                    "situation" : "TARGET_IGNORED"
+                },
+                {
+                    "action" : "IGNORE",
+                    "situation" : "SOURCE_IGNORED"
+                },
+                {
+                    "action" : "IGNORE",
+                    "situation" : "ALL_GONE"
+                },
+                {
+                    "action" : "UPDATE",
+                    "situation" : "CONFIRMED"
+                },
+                {
+                    "action" : "UPDATE",
+                    "situation" : "FOUND"
+                },
+                {
+                    "action" : "CREATE",
+                    "situation" : "ABSENT"
+                }
+            ]
+        },
+        {
+            "target" : "managed/user",
+            "source" : "system/OceanAccess/__ACCOUNT__",
+            "name" : "systemOceanaccess__ACCOUNT___managedUser",
+            "properties" : [
+                {
+                    "target" : "userName",
+                    "source" : "__NAME__"
+                },
+                {
+                    "target" : "mail",
+                    "source" : "__NAME__"
+                },
+                {
+                    "target" : "oceanUser",
+                    "default" : true
+                },
+                {
+                    "target" : "oceanEntitlements/datasets/dataset_id",
+                    "source" : "dataset_id"
+                },
+                {
+                    "target" : "oceanEntitlements/datasets/dataset_role",
+                    "source" : "dataset_role"
+                },
+                {
+                    "target" : "oceanEntitlements/isActive",
+                    "source" : "__NAME__",
+                    "transform" : {
+                        "type" : "text/javascript",
+                        "globals" : { },
+                        "file" : "script/ocean/validateUserStatus.js"
+                    }
+                }
+            ],
+            "policies" : [
+                {
+                    "action" : "EXCEPTION",
+                    "situation" : "AMBIGUOUS"
+                },
+                {
+                    "action" : "EXCEPTION",
+                    "situation" : "SOURCE_MISSING"
+                },
+                {
+                    "action" : "EXCEPTION",
+                    "situation" : "MISSING"
+                },
+                {
+                    "action" : "EXCEPTION",
+                    "situation" : "FOUND_ALREADY_LINKED"
+                },
+                {
+                    "action" : "DELETE",
+                    "situation" : "UNQUALIFIED"
+                },
+                {
+                    "action" : "EXCEPTION",
+                    "situation" : "UNASSIGNED"
+                },
+                {
+                    "action" : "EXCEPTION",
+                    "situation" : "LINK_ONLY"
+                },
+                {
+                    "action" : "IGNORE",
+                    "situation" : "TARGET_IGNORED"
+                },
+                {
+                    "action" : "IGNORE",
+                    "situation" : "SOURCE_IGNORED"
+                },
+                {
+                    "action" : "IGNORE",
+                    "situation" : "ALL_GONE"
+                },
+                {
+                    "action" : "UPDATE",
+                    "situation" : "CONFIRMED"
+                },
+                {
+                    "action" : "UPDATE",
+                    "situation" : "FOUND"
+                },
+                {
+                    "action" : "CREATE",
+                    "situation" : "ABSENT"
+                }
+            ],
+            "correlationQuery" : [
+                {
+                    "linkQualifier" : "default",
+                    "expressionTree" : {
+                        "any" : [
+                            "userName"
+                        ]
+                    },
+                    "mapping" : "systemOceanaccess__ACCOUNT___managedUser",
+                    "type" : "text/javascript",
+                    "file" : "ui/correlateTreeToQueryFilter.js"
+                }
+            ]
+        },
+        {
+            "target" : "managed/user",
+            "source" : "system/Oceantest/__ACCOUNT__",
+            "name" : "systemOceantest__ACCOUNT___managedUser",
+            "properties" : [
+                {
+                    "target" : "userName",
+                    "source" : "email"
+                },
+                {
+                    "target" : "mail",
+                    "source" : "email"
+                },
+                {
+                    "target" : "oceanEntitlements/datasets/dataset_id",
+                    "source" : "__NAME__"
+                },
+                {
+                    "target" : "oceanEntitlements/datasets/dataset_role",
+                    "source" : "dataset_role"
+                }
+            ],
+            "policies" : [
+                {
+                    "action" : "EXCEPTION",
+                    "situation" : "AMBIGUOUS"
+                },
+                {
+                    "action" : "EXCEPTION",
+                    "situation" : "SOURCE_MISSING"
+                },
+                {
+                    "action" : "EXCEPTION",
+                    "situation" : "MISSING"
+                },
+                {
+                    "action" : "EXCEPTION",
+                    "situation" : "FOUND_ALREADY_LINKED"
+                },
+                {
+                    "action" : "DELETE",
+                    "situation" : "UNQUALIFIED"
+                },
+                {
+                    "action" : "EXCEPTION",
+                    "situation" : "UNASSIGNED"
+                },
+                {
+                    "action" : "EXCEPTION",
+                    "situation" : "LINK_ONLY"
+                },
+                {
+                    "action" : "IGNORE",
+                    "situation" : "TARGET_IGNORED"
+                },
+                {
+                    "action" : "IGNORE",
+                    "situation" : "SOURCE_IGNORED"
+                },
+                {
+                    "action" : "IGNORE",
+                    "situation" : "ALL_GONE"
+                },
+                {
+                    "action" : "UPDATE",
+                    "situation" : "CONFIRMED"
+                },
+                {
+                    "action" : "UPDATE",
+                    "situation" : "FOUND"
+                },
+                {
+                    "action" : "CREATE",
+                    "situation" : "ABSENT"
+                }
+            ],
+            "correlationQuery" : [
+                {
+                    "linkQualifier" : "default",
+                    "expressionTree" : {
+                        "any" : [
+                            "userName"
+                        ]
+                    },
+                    "mapping" : "systemOceantest__ACCOUNT___managedUser",
+                    "type" : "text/javascript",
+                    "file" : "ui/correlateTreeToQueryFilter.js"
+                }
+            ]
+        }
+    ]
+}

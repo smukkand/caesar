@@ -1,0 +1,28 @@
+{
+    "icon" : "favicon.ico",
+    "path" : "",
+    "stylesheets" : [
+        "css/bootstrap-3.3.5-custom.css",
+        "css/structure.css",
+        "css/theme.css"
+    ],
+    "settings" : {
+        "logo" : {
+            "src" : "images/logo-horizontal-gojek.png",
+            "title" : "Gojek",
+            "alt" : "Gojek",
+            "height" : "60px",
+            "width" : "60px"
+        },
+        "loginLogo" : {
+            "src" : "images/gojek-logo-horizontal.png",
+            "title" : "Gojek",
+            "alt" : "Gojek",
+            "height" : "180px",
+            "width" : "300px"
+        },
+        "footer" : {
+            "mailto" : "info@gojek.com"
+        }
+    }
+}

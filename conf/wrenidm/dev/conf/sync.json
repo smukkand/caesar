@@ -1,0 +1,409 @@
+{
+    "mappings" : [
+        {
+            "target" : "managed/user",
+            "source" : "system/MiddlewareSource/__ACCOUNT__",
+            "name" : "systemMiddlewaresource__ACCOUNT___managedUser",
+            "properties" : [
+                {
+                    "target" : "_id",
+                    "source" : "Email"
+                },
+                {
+                    "target" : "employeeID",
+                    "source" : "__UID__"
+                },
+                {
+                    "target" : "userName",
+                    "source" : "Email"
+                },
+                {
+                    "target" : "fullName",
+                    "source" : "Full_Name"
+                },
+                {
+                    "target" : "givenName",
+                    "source" : "Preferred_Name"
+                },
+                {
+                    "target" : "mail",
+                    "source" : "Email"
+                },
+                {
+                    "target" : "accountStatus",
+                    "source" : "Status"
+                },
+                {
+                    "target" : "worker_type",
+                    "source" : "Email",
+                    "transform" : {
+                        "type" : "text/javascript",
+                        "globals" : { },
+                        "file" : "script/transformEmployeeType.js"
+                    },
+                    "condition" : "/object/Email pr"
+                },
+                {
+                    "target" : "department",
+                    "source" : "Cost_Center_Name"
+                },
+                {
+                    "target" : "title",
+                    "source" : "Title"
+                },
+                {
+                    "target" : "managerEmail",
+                    "source" : "Manager_Email",
+                    "condition" : "/object/Manager_Email pr"
+                },
+                {
+                    "target" : "managerID",
+                    "source" : "Manager_ID"
+                },
+                {
+                    "target" : "companyName",
+                    "source" : "Company_Name"
+                },
+                {
+                    "target" : "country",
+                    "source" : "Location",
+                    "condition" : "/object/Location pr"
+                },
+                {
+                    "target" : "2nd-LevelManagerEmail",
+                    "source" : "Grant_Manager_Email"
+                },
+                {
+                    "target" : "2nd-LevelManagerID",
+                    "source" : "Grant_Manager_ID"
+                },
+                {
+                    "target" : "endDate",
+                    "source" : "Termination_Date"
+                },
+                {
+                    "target" : "supervisoryOrg",
+                    "source" : "Supervisory_Org"
+                },
+                {
+                    "target" : "companyHierarchy",
+                    "source" : "Company_Hierarchy"
+                },
+                {
+                    "target" : "productGroup",
+                    "source" : "Product"
+                }
+            ],
+            "policies" : [
+                {
+                    "action" : "EXCEPTION",
+                    "situation" : "AMBIGUOUS"
+                },
+                {
+                    "action" : "IGNORE",
+                    "situation" : "SOURCE_MISSING"
+                },
+                {
+                    "action" : "EXCEPTION",
+                    "situation" : "MISSING"
+                },
+                {
+                    "action" : "EXCEPTION",
+                    "situation" : "FOUND_ALREADY_LINKED"
+                },
+                {
+                    "action" : "EXCEPTION",
+                    "situation" : "UNQUALIFIED"
+                },
+                {
+                    "action" : "IGNORE",
+                    "situation" : "UNASSIGNED"
+                },
+                {
+                    "action" : "EXCEPTION",
+                    "situation" : "LINK_ONLY"
+                },
+                {
+                    "action" : "IGNORE",
+                    "situation" : "TARGET_IGNORED"
+                },
+                {
+                    "action" : "IGNORE",
+                    "situation" : "SOURCE_IGNORED"
+                },
+                {
+                    "action" : "IGNORE",
+                    "situation" : "ALL_GONE"
+                },
+                {
+                    "action" : "UPDATE",
+                    "situation" : "CONFIRMED"
+                },
+                {
+                    "action" : "UPDATE",
+                    "situation" : "FOUND"
+                },
+                {
+                    "action" : "CREATE",
+                    "situation" : "ABSENT"
+                }
+            ],
+            "correlationQuery" : [
+                {
+                    "linkQualifier" : "default",
+                    "expressionTree" : {
+                        "any" : [
+                            "userName"
+                        ]
+                    },
+                    "mapping" : "systemMiddlewaresource__ACCOUNT___managedUser",
+                    "type" : "text/javascript",
+                    "file" : "ui/correlateTreeToQueryFilter.js"
+                }
+            ],
+            "onCreate" : {
+                "type" : "text/javascript",
+                "globals" : { },
+                "source" : "target.password='GoJek2021!'"
+            },
+            "enableSync" : false
+        },
+        {
+            "target" : "managed/user",
+            "source" : "system/GojekGoogleProd/__ACCOUNT__",
+            "name" : "systemGojekgoogleprod__ACCOUNT___managedUser",
+            "properties" : [
+                {
+                    "target" : "userName",
+                    "source" : "__NAME__"
+                },
+                {
+                    "target" : "_id",
+                    "source" : "__NAME__"
+                },
+                {
+                    "target" : "mail",
+                    "source" : "emails",
+                    "transform" : {
+                        "type" : "text/javascript",
+                        "globals" : { },
+                        "source" : "source.length ? source[0].address : null"
+                    }
+                },
+                {
+                    "target" : "googleData/entityName",
+                    "source" : "organizations",
+                    "transform" : {
+                        "type" : "text/javascript",
+                        "globals" : { },
+                        "source" : "if (source != null) {\n source[0].costCenter;\n}"
+                    }
+                },
+                {
+                    "target" : "googleData/title",
+                    "source" : "organizations",
+                    "transform" : {
+                        "type" : "text/javascript",
+                        "globals" : { },
+                        "source" : "if (source != null) {\n source[0].title;\n}"
+                    }
+                },
+                {
+                    "target" : "googleData/department",
+                    "source" : "organizations",
+                    "transform" : {
+                        "type" : "text/javascript",
+                        "globals" : { },
+                        "source" : "if (source != null) {\n source[0].department;\n}"
+                    }
+                },
+                {
+                    "target" : "googleData/manager",
+                    "source" : "relations",
+                    "transform" : {
+                        "type" : "text/javascript",
+                        "globals" : { },
+                        "source" : "if (source != null) {\n source[0].value;\n}"
+                    }
+                },
+                {
+                    "target" : "googleData/employmentStatus",
+                    "source" : "suspended",
+                    "transform" : {
+                        "type" : "text/javascript",
+                        "globals" : { },
+                        "source" : "!source ? 'active' : 'inactive';"
+                    }
+                },
+                {
+                    "target" : "googleData/emailAliases",
+                    "source" : "aliases"
+                },
+                {
+                    "target" : "googleData/lastLoginTime",
+                    "source" : "lastLoginTime",
+                    "transform" : {
+                        "type" : "text/javascript",
+                        "globals" : { },
+                        "source" : "source[0]"
+                    }
+                }
+            ],
+            "policies" : [
+                {
+                    "action" : "EXCEPTION",
+                    "situation" : "AMBIGUOUS"
+                },
+                {
+                    "action" : "EXCEPTION",
+                    "situation" : "SOURCE_MISSING"
+                },
+                {
+                    "action" : "CREATE",
+                    "situation" : "MISSING"
+                },
+                {
+                    "action" : "EXCEPTION",
+                    "situation" : "FOUND_ALREADY_LINKED"
+                },
+                {
+                    "action" : "REPORT",
+                    "situation" : "UNQUALIFIED"
+                },
+                {
+                    "action" : "IGNORE",
+                    "situation" : "UNASSIGNED"
+                },
+                {
+                    "action" : "EXCEPTION",
+                    "situation" : "LINK_ONLY"
+                },
+                {
+                    "action" : "IGNORE",
+                    "situation" : "TARGET_IGNORED"
+                },
+                {
+                    "action" : "IGNORE",
+                    "situation" : "SOURCE_IGNORED"
+                },
+                {
+                    "action" : "IGNORE",
+                    "situation" : "ALL_GONE"
+                },
+                {
+                    "action" : "UPDATE",
+                    "situation" : "CONFIRMED"
+                },
+                {
+                    "action" : "UPDATE",
+                    "situation" : "FOUND"
+                },
+                {
+                    "action" : "CREATE",
+                    "situation" : "ABSENT"
+                }
+            ],
+            "correlationQuery" : [
+                {
+                    "linkQualifier" : "default",
+                    "expressionTree" : {
+                        "any" : [
+                            "userName"
+                        ]
+                    },
+                    "mapping" : "systemGojekgoogleprod__ACCOUNT___managedUser",
+                    "type" : "text/javascript",
+                    "file" : "ui/correlateTreeToQueryFilter.js"
+                }
+            ],
+            "onCreate" : {
+                "type" : "text/javascript",
+                "globals" : { },
+                "source" : "target.password=('GoJek2021!')"
+            }
+        },
+        {
+            "target" : "managed/googleGroup",
+            "source" : "system/GojekGoogleProd/__GROUP__",
+            "name" : "systemGojekgoogleprod__GROUP___managedGooglegroup",
+            "properties" : [
+                {
+                    "target" : "__NAME__",
+                    "source" : "__NAME__"
+                },
+                {
+                    "target" : "_id",
+                    "transform" : {
+                        "type" : "text/javascript",
+                        "globals" : { },
+                        "source" : "source._id"
+                    },
+                    "source" : ""
+                },
+                {
+                    "target" : "members",
+                    "transform" : {
+                        "type" : "text/javascript",
+                        "globals" : { },
+                        "file" : "script/googleMap/MapgroupID.js"
+                    },
+                    "source" : ""
+                }
+            ],
+            "policies" : [
+                {
+                    "action" : "ASYNC",
+                    "situation" : "ABSENT"
+                },
+                {
+                    "action" : "ASYNC",
+                    "situation" : "ALL_GONE"
+                },
+                {
+                    "action" : "ASYNC",
+                    "situation" : "AMBIGUOUS"
+                },
+                {
+                    "action" : "ASYNC",
+                    "situation" : "CONFIRMED"
+                },
+                {
+                    "action" : "ASYNC",
+                    "situation" : "FOUND"
+                },
+                {
+                    "action" : "ASYNC",
+                    "situation" : "FOUND_ALREADY_LINKED"
+                },
+                {
+                    "action" : "ASYNC",
+                    "situation" : "LINK_ONLY"
+                },
+                {
+                    "action" : "ASYNC",
+                    "situation" : "MISSING"
+                },
+                {
+                    "action" : "ASYNC",
+                    "situation" : "SOURCE_IGNORED"
+                },
+                {
+                    "action" : "ASYNC",
+                    "situation" : "SOURCE_MISSING"
+                },
+                {
+                    "action" : "ASYNC",
+                    "situation" : "TARGET_IGNORED"
+                },
+                {
+                    "action" : "ASYNC",
+                    "situation" : "UNASSIGNED"
+                },
+                {
+                    "action" : "ASYNC",
+                    "situation" : "UNQUALIFIED"
+                }
+            ]
+        }
+    ]
+}
