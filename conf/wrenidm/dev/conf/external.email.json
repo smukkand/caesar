@@ -4,20 +4,8 @@
     "auth" : {
         "enable" : true,
         "username" : "ceasar-cloudsec@gojek-uat.com",
-        "password" : {
-            "$crypto" : {
-                "type" : "x-simple-encryption",
-                "value" : {
-                    "cipher" : "AES/CBC/PKCS5Padding",
-                    "salt" : "EWCBw5aC/TURLl9yYmL+dw==",
-                    "data" : "Vdf5YEjeR/Z3RYdwi/XEG9VnM2XLsCBjacs1znWnfHQ=",
-                    "iv" : "fgviVrkkCCTMqA4nLEV8PA==",
-                    "key" : "openidm-sym-default",
-                    "mac" : "TlDRUMhAd3Z1FHDJfJew4w=="
-                }
-            }
-        }
-    },
+        "password" : "dbxoxlbwdwhkcpyh"
+        },
     "starttls" : {
         "enable" : true
     },
