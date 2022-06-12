@@ -1,6 +1,6 @@
 {
     "driverClass" : "com.mysql.cj.jdbc.Driver",
-    "jdbcUrl" : "jdbc:mysql://&{openidm.repo.host}:&{openidm.repo.port}/openidm?allowMultiQueries=true&characterEncoding=utf8&allowPublicKeyRetrieval=true&useSSL=false",
+    "jdbcUrl" : "jdbc:mysql://&{openidm.repo.host}:&{openidm.repo.port}/openidm?allowMultiQueries=true&socketFactory=com.google.cloud.sql.mysql.SocketFactory&characterEncoding=utf8&allowPublicKeyRetrieval=true&useSSL=false",
     "databaseName" : "openidm",
     "username" : "openidm",
     "password" : "openidm",
