@@ -1,6 +1,6 @@
 {
     "driverClass" : "com.mysql.cj.jdbc.Driver",
-    "jdbcUrl" : "jdbc:mysql://127.0.0.1:3306/openidm?allowMultiQueries=true",
+    "jdbcUrl" : "jdbc:mysql://127.0.0.1:3306/openidm?allowMultiQueries=true&characterEncoding=utf8",
     "databaseName" : "openidm",
     "username" : "openidm",
     "password" : "openidm",
