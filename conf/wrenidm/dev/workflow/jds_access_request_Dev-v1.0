@@ -1,0 +1,499 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:activiti="http://activiti.org/bpmn" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:omgdc="http://www.omg.org/spec/DD/20100524/DC" xmlns:omgdi="http://www.omg.org/spec/DD/20100524/DI" typeLanguage="http://www.w3.org/2001/XMLSchema" expressionLanguage="http://www.w3.org/1999/XPath" targetNamespace="http://www.activiti.org/test">
+  <process id="dataAccessRequestProcess" name="Data Access Request Process" isExecutable="true">
+    <startEvent id="startRequest" name="Start" activiti:initiator="requesterId">
+      <extensionElements>
+        <activiti:formProperty id="mail" name="Email" type="string" required="true"></activiti:formProperty>
+        <activiti:formProperty id="givenName" name="First Name" type="string" required="true"></activiti:formProperty>
+        <activiti:formProperty id="sn" name="Last Name" type="string" required="true"></activiti:formProperty>
+        <activiti:formProperty id="dataSet" name="DataSet Name" type="string" required="true"></activiti:formProperty>
+        <activiti:formProperty id="Tables" name="Table Names" type="string"></activiti:formProperty>
+        <activiti:formProperty id="isSPIrequired" name="Do you need SPI/PII data access" type="boolean" required="true"></activiti:formProperty>
+        <activiti:formProperty id="justification" name="Justification for Access" type="string" required="true"></activiti:formProperty>
+      </extensionElements>
+    </startEvent>
+    <scriptTask id="initiateRequest" name="Initiate Request" scriptFormat="groovy" activiti:autoStoreVariables="false">
+      <script>            java.text.SimpleDateFormat formatUTC = new java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.S'Z'");
+            formatUTC.setTimeZone(TimeZone.getTimeZone("UTC"));
+            requestDate = formatUTC.format(new Date());
+            java.util.logging.Logger logger = java.util.logging.Logger.getLogger("")
+            logger.info("getUserFromSource - Process Started")
+            logger.info("initiated user is " + requesterId);
+
+            getUserFromSourceParams = [_queryId:'for-userName',uid:requesterId]
+            getUserFromSource = openidm.query('managed/user', getUserFromSourceParams)
+
+            getManagerFromSourceFields = ['manager/mail', 'manager/_id','manager/userName']
+            getManagerFromSource = openidm.query('managed/user', getUserFromSourceParams, getManagerFromSourceFields)
+
+            if(getUserFromSource.result[0] != null) {
+              logger.info("getUserFromSource: " + getUserFromSource.result[0].mail + " exist in idm");
+              execution.setVariable("getUserFromSource", getUserFromSource);
+            }
+	          
+            if(getManagerFromSource.result[0].manager != null) {
+              logger.info("getManagerFromSource: Manager " + getManagerFromSource.result[0].manager.mail + " found in idm");
+              execution.setVariable("getManagerFromSource", getManagerFromSource);
+	     execution.setVariable("userManager",getManagerFromSource.result[0].manager.mail);
+            }</script>
+    </scriptTask>
+    <sequenceFlow id="flow1" sourceRef="startRequest" targetRef="initiateRequest"></sequenceFlow>
+    <exclusiveGateway id="sodCheck" name="SOD Check"></exclusiveGateway>
+    <scriptTask id="notAuthorised" name="Not Authorised" scriptFormat="groovy" activiti:autoStoreVariables="false">
+      <script>java.util.logging.Logger logger = java.util.logging.Logger.getLogger("")
+logger.info("user is not authorised, please reach out to manager)</script>
+    </scriptTask>
+    <sequenceFlow id="flow4" sourceRef="sodCheck" targetRef="notAuthorised">
+      <conditionExpression xsi:type="tFormalExpression"><![CDATA[${userManager == null}]]></conditionExpression>
+    </sequenceFlow>
+    <scriptTask id="requestDeny" name="Deny Notice" scriptFormat="groovy" activiti:autoStoreVariables="false">
+      <script>java.util.logging.Logger logger = java.util.logging.Logger.getLogger("")
+logger.info("Ocean User Request Rejected")</script>
+    </scriptTask>
+    <userTask id="supevisorApproval" name="Supevisor Approval" activiti:assignee="${userManager}">
+      <extensionElements>
+        <activiti:formProperty id="givenName" name="First Name" type="string" writable="false"></activiti:formProperty>
+        <activiti:formProperty id="sn" name="Last Name" type="string" writable="false"></activiti:formProperty>
+        <activiti:formProperty id="mail" name="Email" type="string" writable="false"></activiti:formProperty>
+        <activiti:formProperty id="dataSet" name="DataSet Name" type="string" writable="false"></activiti:formProperty>
+        <activiti:formProperty id="Tables" name="Table Names" type="string" writable="false"></activiti:formProperty>
+        <activiti:formProperty id="isSPIrequired" name="Do you need SPI/PII data access" type="boolean" writable="false"></activiti:formProperty>
+        <activiti:formProperty id="justification" name="Justification for Access" type="string" writable="false"></activiti:formProperty>
+        <activiti:formProperty id="managerDecision" name="Decision" type="enum" required="true">
+          <activiti:value id="approved" name="Approve"></activiti:value>
+          <activiti:value id="rejected" name="Reject"></activiti:value>
+        </activiti:formProperty>
+        <activiti:taskListener event="complete" class="org.activiti.engine.impl.bpmn.listener.ScriptTaskListener">
+          <activiti:field name="script">
+            <activiti:string><![CDATA[task.getExecution().setVariable("email", mail)
+task.getExecution().setVariable("givenName", givenName)
+task.getExecution().setVariable("sn", sn)
+task.getExecution().setVariable("justification", justification)
+task.getExecution().setVariable("isSPIrequired", isSPIrequired)
+task.getExecution().setVariable("dataSet", dataSet)
+task.getExecution().setVariable("Tables", Tables)
+task.getExecution().setVariable("userManager", userManager) 
+task.getExecution().setVariable("managerDecision", managerDecision)]]></activiti:string>
+          </activiti:field>
+          <activiti:field name="language">
+            <activiti:string><![CDATA[groovy]]></activiti:string>
+          </activiti:field>
+        </activiti:taskListener>
+      </extensionElements>
+    </userTask>
+    <scriptTask id="acceptRequest" name="Accept Request" scriptFormat="groovy" activiti:autoStoreVariables="false">
+      <script>java.util.logging.Logger logger = java.util.logging.Logger.getLogger("")
+logger.info("Ocean User Request Approved :).")</script>
+    </scriptTask>
+    <userTask id="dataSecurityApproval" name="Data Security Approval" activiti:candidateGroups="dataSecurityRole">
+      <extensionElements>
+        <activiti:formProperty id="givenName" name="First Name" type="string" writable="false"></activiti:formProperty>
+        <activiti:formProperty id="sn" name="Last Name" type="string" writable="false"></activiti:formProperty>
+        <activiti:formProperty id="mail" name="Email" type="string" writable="false"></activiti:formProperty>
+        <activiti:formProperty id="dataSet" name="DataSet Name" type="string" writable="false"></activiti:formProperty>
+        <activiti:formProperty id="Tables" name="DataSet Tables" type="string" writable="false"></activiti:formProperty>
+        <activiti:formProperty id="justification" name="justification" type="string" writable="false"></activiti:formProperty>
+        <activiti:formProperty id="userManager" name="Supervisor" type="string" writable="false"></activiti:formProperty>
+        <activiti:formProperty id="managerDecision" name="Supervisor Decision" type="string" writable="false"></activiti:formProperty>
+        <activiti:formProperty id="securityDecision" name="Decision" type="enum" required="true">
+          <activiti:value id="approved" name="Approve"></activiti:value>
+          <activiti:value id="rejected" name="Reject"></activiti:value>
+        </activiti:formProperty>
+        <activiti:taskListener event="complete" class="org.activiti.engine.impl.bpmn.listener.ScriptTaskListener">
+          <activiti:field name="script">
+            <activiti:string><![CDATA[task.getExecution().setVariable("email", mail)
+task.getExecution().setVariable("givenName", givenName)
+task.getExecution().setVariable("sn", sn)
+task.getExecution().setVariable("justification", justification)
+task.getExecution().setVariable("isSPIrequired", isSPIrequired)
+task.getExecution().setVariable("dataSet", dataSet)
+task.getExecution().setVariable("Tables", Tables)
+task.getExecution().setVariable("userManager", userManager)
+task.getExecution().setVariable("managerDecision", managerDecision)
+task.getExecution().setVariable("securityDecision", securityDecision)]]></activiti:string>
+          </activiti:field>
+          <activiti:field name="language">
+            <activiti:string><![CDATA[groovy]]></activiti:string>
+          </activiti:field>
+        </activiti:taskListener>
+      </extensionElements>
+    </userTask>
+    <boundaryEvent id="boundarytimer2" name="Timer" attachedToRef="dataSecurityApproval" cancelActivity="true">
+      <timerEventDefinition>
+        <timeDuration>P3D</timeDuration>
+      </timerEventDefinition>
+    </boundaryEvent>
+    <sequenceFlow id="flow12" sourceRef="boundarytimer2" targetRef="notAuthorised"></sequenceFlow>
+    <sequenceFlow id="flow16" sourceRef="dataAdminApproval" targetRef="isAdminApproved"></sequenceFlow>
+    <sequenceFlow id="flow5" sourceRef="sodCheck" targetRef="notifySupervisor">
+      <conditionExpression xsi:type="tFormalExpression"><![CDATA[${userManager != null }]]></conditionExpression>
+    </sequenceFlow>
+    <exclusiveGateway id="isSupervisorApproved" name="Is Supervisor Approved"></exclusiveGateway>
+    <exclusiveGateway id="isSPIdata" name="Is SPI Data"></exclusiveGateway>
+    <sequenceFlow id="flow9" sourceRef="isSupervisorApproved" targetRef="requestDeny">
+      <conditionExpression xsi:type="tFormalExpression"><![CDATA[${managerDecision=='rejected'}]]></conditionExpression>
+    </sequenceFlow>
+    <sequenceFlow id="flow10" sourceRef="isSPIdata" targetRef="notifyDataSec">
+      <conditionExpression xsi:type="tFormalExpression"><![CDATA[${isSPIrequired == true}]]></conditionExpression>
+    </sequenceFlow>
+    <exclusiveGateway id="isSecurityApproved" name="Is Security Approved"></exclusiveGateway>
+    <sequenceFlow id="flow13" sourceRef="dataSecurityApproval" targetRef="isSecurityApproved"></sequenceFlow>
+    <sequenceFlow id="flow15" sourceRef="isSecurityApproved" targetRef="requestDeny">
+      <conditionExpression xsi:type="tFormalExpression"><![CDATA[${securityDecision =='rejected'}]]></conditionExpression>
+    </sequenceFlow>
+    <userTask id="dataAdminApproval" name="Data Admin Approval" activiti:candidateGroups="dataAdminRole">
+      <extensionElements>
+        <activiti:formProperty id="givenName" name="First Name" type="string" writable="false"></activiti:formProperty>
+        <activiti:formProperty id="sn" name="Last Name" type="string" writable="false"></activiti:formProperty>
+        <activiti:formProperty id="mail" name="Email" type="string" writable="false"></activiti:formProperty>
+        <activiti:formProperty id="dataSet" name="DataSet Name" type="string" writable="false"></activiti:formProperty>
+        <activiti:formProperty id="Tables" name="DataSet Tables" type="string" writable="false"></activiti:formProperty>
+        <activiti:formProperty id="justification" name="justification" type="string" writable="false"></activiti:formProperty>
+        <activiti:formProperty id="userManager" name="Supervisor" type="string" writable="false"></activiti:formProperty>
+        <activiti:formProperty id="managerDecision" name="Supervisor Approval" type="string" writable="false"></activiti:formProperty>
+        <activiti:formProperty id="securityDecision" name="Data Security Approval" type="string" writable="false"></activiti:formProperty>
+        <activiti:formProperty id="dataAdminDecision" name="Decision" type="enum" required="true">
+          <activiti:value id="approved" name="Approve"></activiti:value>
+          <activiti:value id="rejected" name="Reject"></activiti:value>
+        </activiti:formProperty>
+        <activiti:taskListener event="complete" class="org.activiti.engine.impl.bpmn.listener.ScriptTaskListener">
+          <activiti:field name="script">
+            <activiti:string><![CDATA[task.getExecution().setVariable("email", mail)
+task.getExecution().setVariable("givenName", givenName)
+task.getExecution().setVariable("sn", sn)
+task.getExecution().setVariable("justification", justification)
+task.getExecution().setVariable("isSPIrequired", isSPIrequired)
+task.getExecution().setVariable("dataSet", dataSet)
+task.getExecution().setVariable("Tables", Tables)
+task.getExecution().setVariable("userManager", userManager)
+task.getExecution().setVariable("managerDecision", managerDecision)
+task.getExecution().setVariable("securityDecision", securityDecision)
+task.getExecution().setVariable("dataAdminDecision", dataAdminDecision)]]></activiti:string>
+          </activiti:field>
+          <activiti:field name="language">
+            <activiti:string><![CDATA[groovy]]></activiti:string>
+          </activiti:field>
+        </activiti:taskListener>
+      </extensionElements>
+    </userTask>
+    <sequenceFlow id="flow14" sourceRef="isSecurityApproved" targetRef="notifyDataAdmin">
+      <conditionExpression xsi:type="tFormalExpression"><![CDATA[${securityDecision=='approved'}]]></conditionExpression>
+    </sequenceFlow>
+    <sequenceFlow id="flow11" sourceRef="isSPIdata" targetRef="notifyDataAdmin">
+      <conditionExpression xsi:type="tFormalExpression"><![CDATA[${isSPIrequired == false}]]></conditionExpression>
+    </sequenceFlow>
+    <boundaryEvent id="boundarytimer5" name="Timer" attachedToRef="dataAdminApproval" cancelActivity="true">
+      <timerEventDefinition>
+        <timeDuration>P2D</timeDuration>
+      </timerEventDefinition>
+    </boundaryEvent>
+    <sequenceFlow id="flow17" sourceRef="boundarytimer5" targetRef="notAuthorised"></sequenceFlow>
+    <parallelGateway id="isAdminApproved" name="Is Admin Approved"></parallelGateway>
+    <sequenceFlow id="flow18" sourceRef="isAdminApproved" targetRef="acceptRequest">
+      <conditionExpression xsi:type="tFormalExpression"><![CDATA[${dataAdminDecision=='approved'}]]></conditionExpression>
+    </sequenceFlow>
+    <sequenceFlow id="flow19" sourceRef="isAdminApproved" targetRef="requestDeny">
+      <conditionExpression xsi:type="tFormalExpression"><![CDATA[${dataAdminDecision=='rejected'}]]></conditionExpression>
+    </sequenceFlow>
+    <endEvent id="endevent1" name="End"></endEvent>
+    <sequenceFlow id="flow22" sourceRef="notAuthorised" targetRef="endevent1"></sequenceFlow>
+    <sequenceFlow id="flow21" sourceRef="requestDeny" targetRef="endevent1"></sequenceFlow>
+    <sequenceFlow id="flow20" sourceRef="acceptRequest" targetRef="endevent1"></sequenceFlow>
+    <scriptTask id="notifySupervisor" name="Notify Supervisor" scriptFormat="groovy" activiti:autoStoreVariables="false">
+      <script>                java.text.SimpleDateFormat formatUTC = new java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.S'Z'");
+                formatUTC.setTimeZone(TimeZone.getTimeZone("UTC"));
+                requestDate = formatUTC.format(new Date());
+
+            java.util.logging.Logger logger = java.util.logging.Logger.getLogger("")
+            logger.info("notifySupervisor - Process Started")
+
+                def managerNotification = [
+                "receiverId": getManagerFromSource.result[0].manager._id,
+                "requesterId" : requesterId,
+                "requester" : getUserFromSource.result[0].mail ,
+                "createDate" : requestDate,
+                "notificationType" : "info",
+                "notificationSubtype" : "",
+                "message" : "You have a new approval request"
+                ];
+
+                openidm.create("repo/ui/notification/", null, managerNotification)
+
+                supervisorEmailParams = [
+                        from : 'approval@idm.ceaser-dev.com', 
+                        to : getManagerFromSource.result[0].manager.mail, 
+                        subject : 'Approval Supervisor Notification', 
+                        type : 'text/plain', 
+                        body : 'Hello Supervisor, You have an approval request for Ocean dataSet access from the user:: ' + getUserFromSource.result[0].mail +  '\n\n\nPlease login to DatAtlantis @ https://console.data.golabs.io/dataaccess and review the request.'
+                    ]
+                openidm.action("external/email", 'sendEmail',  supervisorEmailParams)
+</script>
+    </scriptTask>
+    <sequenceFlow id="flow6" sourceRef="notifySupervisor" targetRef="supevisorApproval"></sequenceFlow>
+    <sequenceFlow id="flow3" sourceRef="initiateRequest" targetRef="sodCheck"></sequenceFlow>
+    <scriptTask id="notifyDataSec" name="Notify Data Security" scriptFormat="groovy" activiti:autoStoreVariables="false">
+      <script>             java.text.SimpleDateFormat formatUTC = new java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.S'Z'");
+              formatUTC.setTimeZone(TimeZone.getTimeZone("UTC"));
+              requestDate = formatUTC.format(new Date());
+
+              java.util.logging.Logger logger = java.util.logging.Logger.getLogger("")
+              logger.info("notifyDataSec - Process Started")
+
+              dataSecRole="dataSecurityRole"
+              getMembersFromRoleParams = [_queryFilter: 'name eq "' + dataSecRole + '"']
+              getMembersFromRoleFields = ['name', 'authzMembers']
+              getMembersFromRole = openidm.query('managed/role', getMembersFromRoleParams, getMembersFromRoleFields)
+
+              logger.info("getMembersFromRole - Script Ran")
+
+              if(getMembersFromRole.result[0].authzMembers != null) {
+                membersIdentified = getMembersFromRole.result[0].authzMembers
+                execution.setVariable("membersIdentified", membersIdentified);
+
+                for (authzMember in membersIdentified) {
+                  logger.info("getMembersFromRole: _id = " + authzMember._ref.split('/')[2] + " found in idm");
+                   def dataSecNotification = [
+                    "receiverId": authzMember._ref.split('/')[2],
+                    "requesterId" : requesterId,
+                    "requester" : getUserFromSource.result[0].mail ,
+                    "createDate" : requestDate,
+                    "notificationType" : "info",
+                    "notificationSubtype" : "",
+                    "message" : "You have a new approval request for Ocean access (DataSecurity Approval Stage)"
+                  ];
+                  openidm.create("repo/ui/notification/", null, dataSecNotification)
+
+
+                  dataSecEmailParams = [
+                        from : 'approval@idm.ceaser-dev.com', 
+                        to : authzMember._ref.split('/')[2], 
+                        subject : 'Approval DataSecurity Notification', 
+                        type : 'text/plain', 
+                        body : 'Hello Data Security Team, You have an approval request for Ocean SPI dataSet access from the user:: ' + getUserFromSource.result[0].mail +  '\n\n\nPlease login to DatAtlantis @ https://console.data.golabs.io/dataaccess and review/approve the request.'
+                    ]
+                openidm.action("external/email", 'sendEmail',  dataSecEmailParams)
+
+
+                }
+              
+              }</script>
+    </scriptTask>
+    <sequenceFlow id="flow23" sourceRef="notifyDataSec" targetRef="dataSecurityApproval"></sequenceFlow>
+    <sequenceFlow id="flow24" sourceRef="supevisorApproval" targetRef="isSupervisorApproved"></sequenceFlow>
+    <sequenceFlow id="flow25" sourceRef="isSupervisorApproved" targetRef="isSPIdata">
+      <conditionExpression xsi:type="tFormalExpression"><![CDATA[${managerDecision=='approved'}]]></conditionExpression>
+    </sequenceFlow>
+    <scriptTask id="notifyDataAdmin" name="Notify Data Admin" scriptFormat="groovy" activiti:autoStoreVariables="false">
+      <script>             java.text.SimpleDateFormat formatUTC = new java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.S'Z'");
+              formatUTC.setTimeZone(TimeZone.getTimeZone("UTC"));
+              requestDate = formatUTC.format(new Date());
+
+              java.util.logging.Logger logger = java.util.logging.Logger.getLogger("")
+              logger.info("notifyDataAdmin - Process Started")
+
+              adminrole="dataAdminRole"
+              getAdminMembersFromRoleParams = [_queryFilter: 'name eq "' + adminrole + '"']
+              getAdminMembersFromRoleFields = ['name', 'authzMembers']
+              getAdminMembersFromRole = openidm.query('managed/role', getAdminMembersFromRoleParams, getAdminMembersFromRoleFields)
+
+              logger.info("getMembersFrom dataAdminRole - Script Ran")
+
+              if(getAdminMembersFromRole.result[0].authzMembers != null) {
+                adminMembersIdentified = getAdminMembersFromRole.result[0].authzMembers
+                execution.setVariable("adminMembersIdentified", adminMembersIdentified);
+
+                for (authzMember in adminMembersIdentified) {
+                  logger.info("getAdminMembersFromRole: _id = " + authzMember._ref.split('/')[2] + " found in idm");
+                   def dataAdminNotification = [
+                    "receiverId": authzMember._ref.split('/')[2],
+                    "requesterId" : requesterId,
+                    "requester" : getUserFromSource.result[0].mail ,
+                    "createDate" : requestDate,
+                    "notificationType" : "Approval Required",
+                    "notificationSubtype" : "Ocean",
+                    "message" : "You have a new approval request for Ocean access (Data Administrator Approval Stage)"
+                  ];
+                  openidm.create("repo/ui/notification/", null, dataAdminNotification)
+
+
+                  dataAdminEmailParams = [
+                        from : 'approval@idm.ceaser-dev.com', 
+                        to : authzMember._ref.split('/')[2], 
+                        subject : 'Approval DataSet Access Notification', 
+                        type : 'text/plain', 
+                        body : 'Hello Data Administrator Team, You have an approval request for Ocean dataSet access from the user:: ' + getUserFromSource.result[0].mail +  '\n\n\nPlease login to DatAtlantis @ https://console.data.golabs.io/dataaccess and review/approve the request.'
+                    ]
+                openidm.action("external/email", 'sendEmail',  dataAdminEmailParams)
+                }
+              }</script>
+    </scriptTask>
+    <sequenceFlow id="flow26" sourceRef="notifyDataAdmin" targetRef="dataAdminApproval"></sequenceFlow>
+  </process>
+  <bpmndi:BPMNDiagram id="BPMNDiagram_dataAccessRequestProcess">
+    <bpmndi:BPMNPlane bpmnElement="dataAccessRequestProcess" id="BPMNPlane_dataAccessRequestProcess">
+      <bpmndi:BPMNShape bpmnElement="startRequest" id="BPMNShape_startRequest">
+        <omgdc:Bounds height="35.0" width="35.0" x="130.0" y="244.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="initiateRequest" id="BPMNShape_initiateRequest">
+        <omgdc:Bounds height="55.0" width="105.0" x="280.0" y="205.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="sodCheck" id="BPMNShape_sodCheck">
+        <omgdc:Bounds height="40.0" width="40.0" x="660.0" y="208.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="notAuthorised" id="BPMNShape_notAuthorised">
+        <omgdc:Bounds height="55.0" width="105.0" x="1020.0" y="364.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="requestDeny" id="BPMNShape_requestDeny">
+        <omgdc:Bounds height="55.0" width="105.0" x="1680.0" y="310.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="supevisorApproval" id="BPMNShape_supevisorApproval">
+        <omgdc:Bounds height="55.0" width="105.0" x="740.0" y="84.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="acceptRequest" id="BPMNShape_acceptRequest">
+        <omgdc:Bounds height="55.0" width="105.0" x="1660.0" y="127.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="dataSecurityApproval" id="BPMNShape_dataSecurityApproval">
+        <omgdc:Bounds height="55.0" width="105.0" x="1185.0" y="7.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="boundarytimer2" id="BPMNShape_boundarytimer2">
+        <omgdc:Bounds height="30.0" width="30.0" x="1275.0" y="47.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="isSupervisorApproved" id="BPMNShape_isSupervisorApproved">
+        <omgdc:Bounds height="40.0" width="40.0" x="930.0" y="97.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="isSPIdata" id="BPMNShape_isSPIdata">
+        <omgdc:Bounds height="40.0" width="40.0" x="930.0" y="42.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="isSecurityApproved" id="BPMNShape_isSecurityApproved">
+        <omgdc:Bounds height="40.0" width="40.0" x="1340.0" y="14.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="dataAdminApproval" id="BPMNShape_dataAdminApproval">
+        <omgdc:Bounds height="55.0" width="105.0" x="1440.0" y="90.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="boundarytimer5" id="BPMNShape_boundarytimer5">
+        <omgdc:Bounds height="30.0" width="30.0" x="1530.0" y="130.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="isAdminApproved" id="BPMNShape_isAdminApproved">
+        <omgdc:Bounds height="40.0" width="40.0" x="1600.0" y="194.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="endevent1" id="BPMNShape_endevent1">
+        <omgdc:Bounds height="35.0" width="35.0" x="1990.0" y="231.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="notifySupervisor" id="BPMNShape_notifySupervisor">
+        <omgdc:Bounds height="55.0" width="105.0" x="740.0" y="201.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="notifyDataSec" id="BPMNShape_notifyDataSec">
+        <omgdc:Bounds height="55.0" width="105.0" x="1041.0" y="7.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="notifyDataAdmin" id="BPMNShape_notifyDataAdmin">
+        <omgdc:Bounds height="55.0" width="105.0" x="1539.0" y="1.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge bpmnElement="flow1" id="BPMNEdge_flow1">
+        <omgdi:waypoint x="165.0" y="261.0"></omgdi:waypoint>
+        <omgdi:waypoint x="280.0" y="232.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow4" id="BPMNEdge_flow4">
+        <omgdi:waypoint x="680.0" y="248.0"></omgdi:waypoint>
+        <omgdi:waypoint x="680.0" y="351.0"></omgdi:waypoint>
+        <omgdi:waypoint x="1072.0" y="364.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow12" id="BPMNEdge_flow12">
+        <omgdi:waypoint x="1290.0" y="77.0"></omgdi:waypoint>
+        <omgdi:waypoint x="1072.0" y="364.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow16" id="BPMNEdge_flow16">
+        <omgdi:waypoint x="1545.0" y="117.0"></omgdi:waypoint>
+        <omgdi:waypoint x="1592.0" y="115.0"></omgdi:waypoint>
+        <omgdi:waypoint x="1572.0" y="166.0"></omgdi:waypoint>
+        <omgdi:waypoint x="1572.0" y="216.0"></omgdi:waypoint>
+        <omgdi:waypoint x="1592.0" y="216.0"></omgdi:waypoint>
+        <omgdi:waypoint x="1600.0" y="214.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow5" id="BPMNEdge_flow5">
+        <omgdi:waypoint x="700.0" y="228.0"></omgdi:waypoint>
+        <omgdi:waypoint x="740.0" y="228.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow9" id="BPMNEdge_flow9">
+        <omgdi:waypoint x="950.0" y="137.0"></omgdi:waypoint>
+        <omgdi:waypoint x="989.0" y="311.0"></omgdi:waypoint>
+        <omgdi:waypoint x="1680.0" y="337.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow10" id="BPMNEdge_flow10">
+        <omgdi:waypoint x="950.0" y="42.0"></omgdi:waypoint>
+        <omgdi:waypoint x="949.0" y="34.0"></omgdi:waypoint>
+        <omgdi:waypoint x="1041.0" y="34.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow13" id="BPMNEdge_flow13">
+        <omgdi:waypoint x="1290.0" y="34.0"></omgdi:waypoint>
+        <omgdi:waypoint x="1340.0" y="34.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow15" id="BPMNEdge_flow15">
+        <omgdi:waypoint x="1360.0" y="54.0"></omgdi:waypoint>
+        <omgdi:waypoint x="1360.0" y="311.0"></omgdi:waypoint>
+        <omgdi:waypoint x="1680.0" y="337.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow14" id="BPMNEdge_flow14">
+        <omgdi:waypoint x="1380.0" y="34.0"></omgdi:waypoint>
+        <omgdi:waypoint x="1444.0" y="36.0"></omgdi:waypoint>
+        <omgdi:waypoint x="1539.0" y="28.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow11" id="BPMNEdge_flow11">
+        <omgdi:waypoint x="970.0" y="62.0"></omgdi:waypoint>
+        <omgdi:waypoint x="1005.0" y="63.0"></omgdi:waypoint>
+        <omgdi:waypoint x="1050.0" y="102.0"></omgdi:waypoint>
+        <omgdi:waypoint x="1236.0" y="102.0"></omgdi:waypoint>
+        <omgdi:waypoint x="1591.0" y="56.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow17" id="BPMNEdge_flow17">
+        <omgdi:waypoint x="1545.0" y="160.0"></omgdi:waypoint>
+        <omgdi:waypoint x="1072.0" y="364.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow18" id="BPMNEdge_flow18">
+        <omgdi:waypoint x="1620.0" y="194.0"></omgdi:waypoint>
+        <omgdi:waypoint x="1620.0" y="154.0"></omgdi:waypoint>
+        <omgdi:waypoint x="1660.0" y="154.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow19" id="BPMNEdge_flow19">
+        <omgdi:waypoint x="1620.0" y="234.0"></omgdi:waypoint>
+        <omgdi:waypoint x="1732.0" y="310.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow22" id="BPMNEdge_flow22">
+        <omgdi:waypoint x="1072.0" y="364.0"></omgdi:waypoint>
+        <omgdi:waypoint x="2007.0" y="266.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow21" id="BPMNEdge_flow21">
+        <omgdi:waypoint x="1732.0" y="310.0"></omgdi:waypoint>
+        <omgdi:waypoint x="2007.0" y="266.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow20" id="BPMNEdge_flow20">
+        <omgdi:waypoint x="1712.0" y="182.0"></omgdi:waypoint>
+        <omgdi:waypoint x="2007.0" y="231.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow6" id="BPMNEdge_flow6">
+        <omgdi:waypoint x="792.0" y="201.0"></omgdi:waypoint>
+        <omgdi:waypoint x="792.0" y="139.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow3" id="BPMNEdge_flow3">
+        <omgdi:waypoint x="385.0" y="232.0"></omgdi:waypoint>
+        <omgdi:waypoint x="660.0" y="228.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow23" id="BPMNEdge_flow23">
+        <omgdi:waypoint x="1146.0" y="34.0"></omgdi:waypoint>
+        <omgdi:waypoint x="1185.0" y="34.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow24" id="BPMNEdge_flow24">
+        <omgdi:waypoint x="845.0" y="111.0"></omgdi:waypoint>
+        <omgdi:waypoint x="920.0" y="111.0"></omgdi:waypoint>
+        <omgdi:waypoint x="930.0" y="117.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow25" id="BPMNEdge_flow25">
+        <omgdi:waypoint x="950.0" y="97.0"></omgdi:waypoint>
+        <omgdi:waypoint x="950.0" y="82.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow26" id="BPMNEdge_flow26">
+        <omgdi:waypoint x="1591.0" y="56.0"></omgdi:waypoint>
+        <omgdi:waypoint x="1492.0" y="90.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</definitions>
