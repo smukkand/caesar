@@ -1,4 +1,4 @@
 {
     "useDataSource" : "default",
-    "workflowDirectory" : "&{launcher.project.location}/workflow"
+    "workflowDirectory" : "/git/config/conf/wrenidm/dev/workflow"
 }
